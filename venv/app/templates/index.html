@@ -5,27 +5,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HearAble</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-components-web/dist/material-components-web.min.css">
 
+    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-components-web/dist/material-components-web.min.css">
     <script src="https://cdn.jsdelivr.net/npm/material-components-web/dist/material-components-web.min.js" defer></script>
+
     <style>
-       body {
+             body {
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            background-color: #1e90ff;
+            color: white;
+        }
+        section {
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #007acc;
+        }
+        .microphone-btn {
+            background-color: #ff6347;
+            margin-left: 10px;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f9ff; /* Soft light blue */
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #0077cc;
         }
+
         h1 {
-            color: #0077cc;
+            color: #0077cc; /* Bright blue */
             margin-top: 20px;
             text-align: center;
-            font-weight: 520; 
+            font-weight: 400;
         }
 
         .card {
@@ -40,13 +79,13 @@
         }
 
         .card h2 {
-            color: #333;
+            color: #004c70; /* Deep teal for strong contrast */
             font-weight: 500;
             margin-bottom: 10px;
         }
 
         .button {
-            background-color: #00b894;
+            background-color: #00b894; /* Bright green-teal */
             color: white;
             border: none;
             border-radius: 6px;
@@ -58,10 +97,16 @@
         }
 
         .button:hover {
-            background-color: #007965;
+            background-color: #007965; /* Slightly darker teal for hover */
+        }
+        .microphone-btn {
+            background-color: #ff6347;
+            margin-left: 10px;
         }
 
-        textarea, input[type="file"], input[type="text"] {
+        textarea,
+        input[type="file"],
+        input[type="text"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -70,6 +115,14 @@
             margin-bottom: 10px;
             font-size: 16px;
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        section {
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         input[type="file"] {
@@ -81,6 +134,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -92,75 +146,125 @@
 <body>
     <h1>HearAble: Accessible Audiobook Companion</h1>
 
+    <!-- Upload and Convert PDF -->
     <div class="card">
-        <h2>1. Upload a File</h2>
-        <input type="file" id="file" />
-        <button class="button" onclick="uploadFile()">Upload</button>
+        <h2>1. Upload PDF and Convert to Audiobook</h2>
+        <input type="file" id="file" accept=".pdf" />
+        <button class="button" onclick="uploadAndConvertPDF()">Upload & Convert</button>
         <input type="hidden" id="filePath" />
     </div>
 
+    <!-- Ask Questions -->
     <div class="card">
-        <h2>2. Convert Text to Audio</h2>
-        <textarea id="text" rows="5" cols="40" placeholder="Enter text to convert to audio"></textarea>
-        <button class="button" onclick="convertToAudio()">Convert to Audio</button>
+        <h2>2. Ask Questions About the Document</h2>
+        <textarea id="question" rows="4" placeholder="Type your question here"></textarea>
+        <button onclick="askQuestion()">Ask Question</button>
+        <button class="mic-btn" onclick="startVoiceInput()">🎤 Use Voice</button>
+        <div id="recordingIndicator" style="display: none; margin-top: 10px;">
+            <span>🎙️ Recording...</span>
+        </div>
+        <div class="output" id="questionOutput"></div>
+        <!-- <div class="answerText"></div> -->
     </div>
-
-    <div class="card">
-        <h2>3. Get Image Caption</h2>
-        <input type="text" id="imagePath" placeholder="Enter image file path" />
-        <button class="button" onclick="getImageCaption()">Get Caption</button>
-    </div>
-
-    <script>
-        async function uploadFile() {
-            const fileInput = document.getElementById('file');
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            if (result.success) {
-                alert('File uploaded successfully!');
-                document.getElementById('filePath').value = result.filepath;
-            } else {
-                alert('File upload failed: ' + result.error);
-            }
-        }
-
-        async function convertToAudio() {
-            const text = document.getElementById('text').value;
-            const response = await fetch('/text-to-audio', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text })
-            });
-            const result = await response.json();
-            if (result.success) {
-                const audio = new Audio(result.audioPath);
-                audio.play();
-            } else {
-                alert('Error: ' + result.error);
-            }
-        }
-
-        async function getImageCaption() {
-            const imagePath = document.getElementById('imagePath').value;
-            const response = await fetch('/image-caption', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imagePath })
-            });
-            const result = await response.json();
-            if (result.success) {
-                alert('Caption: ' + result.caption);
-            } else {
-                alert('Error: ' + result.error);
-            }
-        }
-    </script>
 </body>
+
+<script>
+    async function uploadAndConvertPDF() {
+        const fileInput = document.getElementById('file');
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        const response = await fetch('/upload-and-convert', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert('PDF uploaded and converted successfully! Chapters will be converted to audio.');
+            result.audioPaths.forEach(audioPath => {
+                const audio = new Audio(audioPath);
+                const audioPlayer = document.createElement('audio');
+                audioPlayer.controls = true;
+                audioPlayer.src = 'http://127.0.0.1:5000/static/uploads/chapter_3.wav';
+                questionOutput.appendChild(audioPlayer);
+                // audioPlayer.play();
+            });
+        } else {
+            alert('File upload and conversion failed: ' + result.error);
+        }
+    }
+
+    async function askQuestion() {
+        const question = document.getElementById('question').value;
+        const response = await fetch('/ask-question', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+        });
+        // document.getElementById('answerText').innerText = 'the image is of a beach with rocks and palm trees';
+            
+            const audioPlayer = document.createElement('audio');
+                audioPlayer.controls = true;
+                audioPlayer.src = 'http://127.0.0.1:5000/static/uploads/answer.wav';
+                questionOutput.appendChild(audioPlayer);
+        progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+
+    // Show progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        if (progress < 90) {
+            progress += 10;
+            progressBar.style.width = `${progress}%`;
+        }
+    }, 500);
+
+        const result = await response.json();
+        if (result.success) {
+            // document.getElementById('answerText').innerText = result.answer;
+            
+            const audioPlayer = document.createElement('audio');
+                audioPlayer.controls = true;
+                audioPlayer.src = 'http://127.0.0.1:5000/static/uploads/answer.wav';
+                questionOutput.appendChild(audioPlayer);
+        } else {
+            alert('Error: ' + result.error);
+        }
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
+
+    }
+    
+
+    function startVoiceInput() {
+        const recordingIndicator = document.getElementById('recordingIndicator');
+    
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                console.log('Voice recognition started');
+            };
+            recordingIndicator.style.display = 'block';
+            recognition.onspeechend = () => {
+                recognition.stop();
+            };
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('question').value = transcript;
+            };
+            recognition.onend = function () {
+        recordingIndicator.style.display = 'none';
+    };
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                alert('Voice recognition error: ' + event.error);
+            };
+
+            recognition.start();
+        }
+</script>
 
 </html>
