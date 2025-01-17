@@ -13,5 +13,3 @@ https://www.loom.com/share/f26e69225fe34345bd0aa037933a2c70
 ![Alt text](images/v1.png?raw=true "Screenshot")
 
 ![Alt text](images/v2.png?raw=true "Screenshot")
-
-![Alt text](images/v3.png?raw=true "Screenshot")
